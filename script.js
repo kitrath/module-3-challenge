@@ -18,6 +18,25 @@ const charSets = {
 
 const comboSet = charSets.upper + charSets.lower + charSets.numeric + charSets.special;
 
+function getPwdLength() {
+  let pwdLength = prompt("Please enter a password length between 8 and 128.");
+  let result = parseInt(pwdLength, 10);
+  if ((result < 8) || (result > 128) || Number.isNaN(result)) {
+    alert("You must enter a number between 8 and 128.");
+    return null;
+  }
+  return result;
+}
+
+function confirmCharSet(configObject, propName, charSetName) {
+  let upper = confirm(`Should your password include ${charSetName} characters?`);
+  let newConfig = Object.assign({}, configObject);
+  if (upper) {
+    newConfig[propName]= true;
+  }
+  return newConfig;
+}
+ 
 function generateRandomString(length, config = null) {
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -28,7 +47,8 @@ function generateRandomString(length, config = null) {
 
 // TODO: Remove -- Just for intial tests
 const generatePassword = function() {
-  return generateRandomString(50);
+  let length = getPwdLength();
+  return generateRandomString(length);
 };
 
 /**************** Preserve code below ***************************/
