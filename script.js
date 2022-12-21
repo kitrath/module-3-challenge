@@ -1,21 +1,46 @@
 // Assignment code here
+(function(global) {
 
-// TODO: Generate a simple password of given length and test it
+// so we can use prompt, etc. like we're in global scope
+var prompt         = global.prompt;
+var confirm        = global.confirm;
+var alert          = global.alert;
 
-// Passwords will be generated from user-chosen combinations
-// of charSets properties.
-const charSets = {
-  upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-  lower: "abcdefghijklmnopqrstuvwxyz",
-  numeric: "0123456789",
-  // List of special characters obtained
-  // from https://owasp.org/www-community/password-special-characters
-  //
-  // " (quote), ' (single-quote), \ (backslash), & (ampersand) all need
-  // to be escaped with a single backslash
-  special: " !\"#$%\&\'()*+,-./:;<=>?@[\\]^_`{|}~"
+var upperCharSet   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var lowerCharSet   = "abcdefghijklmnopqrstuvwxyz";
+var numericCharSet = "0123456789";
+
+// See https://owasp.org/www-community/password-special-characters
+// " (quote), ' (single-quote), \ (backslash), & (ampersand) all need
+// to be escaped with a single backslash
+var specialCharSet = " !\"#$%\&\'()*+,-./:;<=>?@[\\]^_`{|}~";
+
+var charSets = {
+  upper: {
+    isUsed: false,
+    chars: upperCharSet
+  },
+  lower: {
+    isUsed: false,
+    chars: lowerCharSet
+  },
+  numeric: {
+    isUsed: false,
+    chars: numericCharSet
+  },
+  special: {
+    isUsed: false,
+    chars: specialCharSet
+  }
 };
 
+// returns charSets after resetting each object's isUsed property to `false`
+function resetCharSets(charSets) {
+  for (var obj in charSets) {
+    obj.isUsed = false;
+  }
+  return charSets;
+}
 
 function getPwdLength() {
   let pwdlength = prompt("please enter a password length between 8 and 128.");
@@ -27,6 +52,37 @@ function getPwdLength() {
   return result;
 }
 
+function confirmCharSet(charSetStr) {
+  return confirm("Use " + charSetStr + " characters in your password?");
+}
+
+// returns modified charSets object
+function confirmCharSets(charSets) {
+  charSets.upper.isUsed = confirmCharSet("uppercase");
+  charSets.lower.isUsed = confirmCharSet("lowercase");
+  charSets.numeric.isUsed = confirmCharSet("numeric");
+  charSets.special.isUsed = confirmCharSet("special");
+
+  return charSets;
+}
+
+// returns combined string from which password will be randomly generated
+function buildCharacterSet(charSets) {
+    var result = "";
+    if (charSets.upper.isUsed) {
+      result += charSets.upper.chars;
+    }
+    if (charSets.lower.isUsed) {
+      result += charSets.lower.chars;
+    }
+    if (charSets.numeric.isUsed) {
+      result += charSets.numeric.chars;
+    }
+    if (charSets.special.isUsed) {
+      result += charSets.special.chars;
+    }
+    return result;
+  }
  
 function generateRandomString(length, characterSet) {
   let result = '';
@@ -36,43 +92,22 @@ function generateRandomString(length, characterSet) {
   return result;
 }
 
-// TODO: Remove -- Just for intial tests
-const generatePassword = function() {
-  let length = getPwdLength();
-  var upper = false;
-  var lower = false;
-  var numeric = false;
-  var special = false;
-  upper = confirm("use uppercase letters in your password?");
-  lower = confirm("use lowercase letters in your password?");
-  numeric = confirm("use numerals in your password?");
-  special = confirm("use special characters in your password?");
-
-  function buildCharacterSet() {
-    var result = "";
-    if (upper) {
-      result += charSets.upper;
-    }
-    if (lower) {
-      result += charSets.lower;
-    }
-    if (numeric) {
-      result += charSets.numeric;
-    }
-    if (special) {
-      result += charSets.special;
-    }
-    return result;
-  }
-
-  var charSet = buildCharacterSet();
+// global is window object
+global.generatePassword = function() {
+  var characterSets = resetCharSets(charSets);
+  var length = getPwdLength();
+  var confirmedCharSets = confirmCharSets(characterSets);
+  var charSet = buildCharacterSet(confirmedCharSets);
   console.log("charSet = " + charSet);
   if (charSet === "") {
     alert("You must choose at least one character set.");
-    return;
+    // return empty string or `undefined` will display in DOM element
+    return "";
   }
   return generateRandomString(length, charSet);
-};
+}
+
+})(window);
 
 /**************** Preserve code below ***************************/
 
