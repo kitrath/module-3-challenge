@@ -16,31 +16,22 @@ const charSets = {
   special: " !\"#$%\&\'()*+,-./:;<=>?@[\\]^_`{|}~"
 };
 
-const comboSet = charSets.upper + charSets.lower + charSets.numeric + charSets.special;
 
 function getPwdLength() {
-  let pwdLength = prompt("Please enter a password length between 8 and 128.");
-  let result = parseInt(pwdLength, 10);
+  let pwdlength = prompt("please enter a password length between 8 and 128.");
+  let result = parseInt(pwdlength, 10);
   if ((result < 8) || (result > 128) || Number.isNaN(result)) {
-    alert("You must enter a number between 8 and 128.");
+    alert("you must enter a number between 8 and 128.");
     return null;
   }
   return result;
 }
 
-function confirmCharSet(configObject, propName, charSetName) {
-  let upper = confirm(`Should your password include ${charSetName} characters?`);
-  let newConfig = Object.assign({}, configObject);
-  if (upper) {
-    newConfig[propName]= true;
-  }
-  return newConfig;
-}
  
-function generateRandomString(length, config = null) {
+function generateRandomString(length, characterSet) {
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += comboSet[Math.floor(Math.random() * comboSet.length)];  
+    result += characterSet[Math.floor(Math.random() * characterSet.length)];  
   }
   return result;
 }
@@ -48,7 +39,39 @@ function generateRandomString(length, config = null) {
 // TODO: Remove -- Just for intial tests
 const generatePassword = function() {
   let length = getPwdLength();
-  return generateRandomString(length);
+  var upper = false;
+  var lower = false;
+  var numeric = false;
+  var special = false;
+  upper = confirm("use uppercase letters in your password?");
+  lower = confirm("use lowercase letters in your password?");
+  numeric = confirm("use numerals in your password?");
+  special = confirm("use special characters in your password?");
+
+  function buildCharacterSet() {
+    var result = "";
+    if (upper) {
+      result += charSets.upper;
+    }
+    if (lower) {
+      result += charSets.lower;
+    }
+    if (numeric) {
+      result += charSets.numeric;
+    }
+    if (special) {
+      result += charSets.special;
+    }
+    return result;
+  }
+
+  var charSet = buildCharacterSet();
+  console.log("charSet = " + charSet);
+  if (charSet === "") {
+    alert("You must choose at least one character set.");
+    return;
+  }
+  return generateRandomString(length, charSet);
 };
 
 /**************** Preserve code below ***************************/
