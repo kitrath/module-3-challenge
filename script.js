@@ -1,4 +1,5 @@
-// Assignment code here
+// Use an Immediatly Invoked Function Expression (IIFE)
+// to protect the global scope.
 (function(global) {
 
 // so we can use prompt, etc. like we're in global scope
@@ -34,7 +35,7 @@ var charSets = {
   }
 };
 
-// returns charSets after resetting each object's isUsed property to `false`
+// resets each object's isUsed property to false
 function resetCharSets(charSets) {
   for (var obj in charSets) {
     obj.isUsed = false;
@@ -43,8 +44,8 @@ function resetCharSets(charSets) {
 }
 
 function getPwdLength() {
-  let pwdlength = prompt("please enter a password length between 8 and 128.");
-  let result = parseInt(pwdlength, 10);
+  var pwdlength = prompt("please enter a password length between 8 and 128.");
+  var result = parseInt(pwdlength, 10);
   if ((result < 8) || (result > 128) || Number.isNaN(result)) {
     alert("you must enter a number between 8 and 128.");
     return null;
@@ -66,29 +67,87 @@ function confirmCharSets(charSets) {
   return charSets;
 }
 
-// returns combined string from which password will be randomly generated
+// Returns combined string of character sets
 function buildCharacterSet(charSets) {
-    var result = "";
-    if (charSets.upper.isUsed) {
-      result += charSets.upper.chars;
-    }
-    if (charSets.lower.isUsed) {
-      result += charSets.lower.chars;
-    }
-    if (charSets.numeric.isUsed) {
-      result += charSets.numeric.chars;
-    }
-    if (charSets.special.isUsed) {
-      result += charSets.special.chars;
-    }
-    return result;
+  var result = "";
+  if (charSets.upper.isUsed) {
+    result += charSets.upper.chars;
   }
+  if (charSets.lower.isUsed) {
+    result += charSets.lower.chars;
+  }
+  if (charSets.numeric.isUsed) {
+    result += charSets.numeric.chars;
+  }
+  if (charSets.special.isUsed) {
+    result += charSets.special.chars;
+  }
+  return result;
+}
+
+function buildArrayOfInts(length) {
+  var arr = [];
+  for (var i = 0; i < length; i++) {
+    arr.push(i);
+  }
+  return arr;
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function getValueAtRandomIndex(arr) {
+  return arr[getRandomInt(arr.length)];
+}
+
+// returns a number (int)
+function spliceToRandomInt(arr) {
+  // modifies arr, arr.length = arr.length - 1 after call
+  return arr.splice(getRandomInt(arr.length), 1)[0];
+}
+
+// returns array 
+// call after confirmCharSets()
+function getChosenCharSetNames(charSet) {
+  var arr = [];
+  for (var obj in charSet) {
+    if (charSet[obj]['isUsed']) {
+      arr.push(obj)
+    }
+  }
+  return arr;
+}
+
+// chosenLength - chosen password length
+// charSetNameList - list of chosen character sets
+// returns a Map of int to string
+function buildIntToCharSetMap(chosenLength, charSetNameList) {
+  var resultMap = new Map();
+  var indexArray = buildArrayOfInts(chosenLength);
+  for (var charSetName of charSetNameList) {
+    // Doing this twice, for now, on purpose.
+    // indexArray decreases length by 1 with each call
+    resultMap.set(spliceToRandomInt(indexArray), charSetName);
+    resultMap.set(spliceToRandomInt(indexArray), charSetName);
+  }
+  return resultMap
+}
  
-function generateRandomString(length, characterSet) {
+function generateRandomString(length, combinedSet, charSets, configMap) {
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += characterSet[Math.floor(Math.random() * characterSet.length)];  
+    // `configMap` maps random indices to particular character sets
+    // to ensure that (especially smaller) generated passwords contain
+    // characters from all chosen sets. see `buildIntToCharSetMap()`
+    if (configMap.has(i)) {
+      var singleSet = charSets[configMap.get(i)].chars;
+      result += getValueAtRandomIndex(singleSet);
+    } else {
+      result += getValueAtRandomIndex(combinedSet);
+    }
   }
+  // TODO: Don't allow generated strings to begin or end with space character.
   return result;
 }
 
@@ -97,16 +156,21 @@ global.generatePassword = function() {
   var characterSets = resetCharSets(charSets);
   var length = getPwdLength();
   var confirmedCharSets = confirmCharSets(characterSets);
-  var charSet = buildCharacterSet(confirmedCharSets);
-  console.log("charSet = " + charSet);
-  if (charSet === "") {
+  var combinedString = buildCharacterSet(confirmedCharSets);
+
+  if (combinedString === "") {
     alert("You must choose at least one character set.");
     // return empty string or `undefined` will display in DOM element
     return "";
   }
-  return generateRandomString(length, charSet);
+
+  var chosenCharSets = getChosenCharSetNames(confirmedCharSets);
+  var charSetMap = buildIntToCharSetMap(length, chosenCharSets);
+  return generateRandomString(length, combinedString, 
+                                      confirmedCharSets, charSetMap);
 }
 
+// END IIFE
 })(window);
 
 /**************** Preserve code below ***************************/
