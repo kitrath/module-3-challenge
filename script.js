@@ -68,19 +68,12 @@ function confirmCharSets(charSets) {
 }
 
 // Returns combined string of character sets
-function buildCharacterSet(charSets) {
+function buildCombinedSet(charSets) {
   var result = "";
-  if (charSets.upper.isUsed) {
-    result += charSets.upper.chars;
-  }
-  if (charSets.lower.isUsed) {
-    result += charSets.lower.chars;
-  }
-  if (charSets.numeric.isUsed) {
-    result += charSets.numeric.chars;
-  }
-  if (charSets.special.isUsed) {
-    result += charSets.special.chars;
+  for (obj in charSets) {
+    if (charSets[obj]['isUsed']) {
+      result += charSets[obj]['chars'];
+    }
   }
   return result;
 }
@@ -157,7 +150,7 @@ global.generatePassword = function() {
   var characterSets = resetCharSets(charSets);
   var length = getPwdLength();
   var confirmedCharSets = confirmCharSets(characterSets);
-  var combinedString = buildCharacterSet(confirmedCharSets);
+  var combinedString = buildCombinedSet(confirmedCharSets);
 
   if (combinedString === "") {
     alert("You must choose at least one character set.");
